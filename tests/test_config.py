@@ -254,3 +254,35 @@ def test_dict_action():
     cfg.merge_from_dict(args.options)
     assert cfg.item2 == dict(a=1, b=0.1, c='x')
     assert cfg.item3 is False
+
+
+def test_dump_mapping():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/n.py')
+    cfg = Config.fromfile(cfg_file)
+
+    with tempfile.TemporaryDirectory() as temp_config_dir:
+        text_cfg_filename = osp.join(temp_config_dir, '_text_config.py')
+        cfg.dump(text_cfg_filename)
+        text_cfg = Config.fromfile(text_cfg_filename)
+
+    assert text_cfg._cfg_dict == cfg._cfg_dict
+
+
+def test_reserved_key():
+    cfg_file = osp.join(osp.dirname(__file__), 'data/config/g.py')
+    with pytest.raises(KeyError):
+        Config.fromfile(cfg_file)
+
+
+def test_syntax_error():
+    temp_cfg_file = tempfile.NamedTemporaryFile(suffix='.py')
+    temp_cfg_path = temp_cfg_file.name
+    # write a file with syntax error
+    with open(temp_cfg_path, 'w') as f:
+        f.write('a=0b=dict(c=1)')
+    with pytest.raises(
+            SyntaxError,
+            match='There are syntax errors in config '
+            f'file {temp_cfg_path}'):
+        Config.fromfile(temp_cfg_path)
+    temp_cfg_file.close()
