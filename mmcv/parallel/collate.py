@@ -35,7 +35,6 @@ def collate(batch, samples_per_gpu=1):
         elif batch[0].stack:
             for i in range(0, len(batch), samples_per_gpu):
                 assert isinstance(batch[i].data, torch.Tensor)
-
                 if batch[i].pad_dims is not None:
                     ndim = batch[i].dim()
                     assert ndim > batch[i].pad_dims
